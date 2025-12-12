@@ -31,7 +31,7 @@ def setup_chromadb(reset=False):
     # Check if database already exists
     if Path(CHROMA_DB_PATH).exists():
         print("📂 Loading existing ChromaDB from disk...")
-        embeddings = OllamaEmbeddings(model="llama3.1:8b")
+        embeddings = OllamaEmbeddings(model="nomic-embed-text")
         vectorstore = Chroma(
             persist_directory=CHROMA_DB_PATH,
             embedding_function=embeddings
@@ -40,8 +40,8 @@ def setup_chromadb(reset=False):
         return vectorstore
     
     print("🔧 Creating new ChromaDB...")
-    print("⏳ Generating embeddings with Ollama (this may take a moment)...")
-    
+    print("⏳ Generating embeddings with nomic-embed-text (this may take a moment)...")
+
     # Course information
     documents = [
         "Flutter is a cross-platform mobile development framework created by Google. It uses Dart programming language and allows building apps for iOS, Android, and web from a single codebase. Flutter has hot reload, rich widgets, and excellent performance.",
@@ -59,9 +59,9 @@ def setup_chromadb(reset=False):
         {"course": "General", "topic": "Platform Info", "students": 550, "id": "general"}
     ]
     
-    # Create embeddings
-    embeddings = OllamaEmbeddings(model="llama3.1:8b")
-    
+    # Create embeddings using nomic-embed-text (optimized for embeddings)
+    embeddings = OllamaEmbeddings(model="nomic-embed-text")
+
     # Create ChromaDB vector store
     vectorstore = Chroma.from_texts(
         texts=documents,
@@ -78,7 +78,7 @@ def setup_chromadb(reset=False):
 
 # Initialize ChromaDB
 print("🚀 Initializing Real ChromaDB...\n")
-vectorstore = setup_chromadb(reset=False)  # Change to True to recreate database
+vectorstore = setup_chromadb(reset=True)  # Reset to use new embedding model
 
 
 @tool
@@ -119,7 +119,7 @@ def get_course_details(course_name: str) -> str:
 
 def run_agent_reasoning(state: MessagesState) -> MessagesState:
     """Agent decides what to do based on the current state"""
-    llm = ChatOllama(temperature=0, model="llama3.1:8b")
+    llm = ChatOllama(temperature=0, model="llama3.1:8b-instruct-q8_0")
     llm_with_tools = llm.bind_tools([search_courses, get_course_details])
     response = llm_with_tools.invoke(state["messages"])
     return {"messages": [response]}
