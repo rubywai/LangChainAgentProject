@@ -1,6 +1,6 @@
 # LangChain Agent Project
 
-A collection of LangChain examples demonstrating AI agents, tool calling, and real-time web search with Tavily.
+A comprehensive collection of LangChain and LangGraph examples demonstrating AI agents, tool calling, real-time web search, and RAG (Retrieval Augmented Generation) with vector databases.
 
 ## 🚀 Features
 
@@ -8,6 +8,8 @@ A collection of LangChain examples demonstrating AI agents, tool calling, and re
 - **Tool Calling** with static functions
 - **Real-time Web Search** with Tavily API
 - **Structured Responses** with Pydantic models
+- **LangGraph ReAct Agents** with multi-step reasoning
+- **RAG with Vector Databases** using ChromaDB
 - **Job Search Agent** example
 
 ## 📋 Prerequisites
@@ -57,9 +59,17 @@ LangChainProject/
 ├── main_4tool_call_tavily.py           # Multiple tools + Tavily search
 ├── main_5simple_tavily.py              # Simple Tavily search with structured output
 ├── main_6job_search_example.py         # Job search agent example
-├── TOOL_CALL_GUIDE.md                  # Detailed guide on tool calling
+├── main_7langgraph_react_agent.py      # LangGraph ReAct agent (NEW! ⭐)
+├── main_8chromadb_rag.py               # Knowledge base RAG (in-memory)
+├── main_9real_chromadb.py              # Real ChromaDB vector database (NEW! ⭐)
+├── flow_7.png                          # LangGraph visualization
+├── chromadb_structure.md               # ChromaDB architecture explanation
+├── main_8_explanation.md               # RAG explanation
 ├── .env                                # Environment variables (create this)
 ├── pyproject.toml                      # Project dependencies
+├── chroma_db/                          # ChromaDB storage (created on first run)
+│   ├── chroma.sqlite3                  # SQLite metadata
+│   └── [UUID]/                         # Vector embeddings
 └── README.md                           # This file
 ```
 
@@ -175,6 +185,118 @@ uv run python main_6job_search_example.py
 
 ---
 
+### 7. LangGraph ReAct Agent ⭐ (NEW!)
+
+Multi-step reasoning agent that can use multiple tools and decide when to stop.
+
+```bash
+uv run python main_7langgraph_react_agent.py
+```
+
+**Features:**
+- 🔄 **ReAct Pattern**: Reasoning → Action → Observation loop
+- 🛠️ **Multiple Tools**: Calculator + Tavily web search
+- 🤖 **Agent Decides**: When to use tools, which tools, and when to stop
+- 📊 **Visualization**: Generates `flow_7.png` showing the agent workflow
+
+**Key Difference from LangChain:**
+- **LangChain**: Single pass, one-shot tool calling
+- **LangGraph**: Multi-step reasoning, can call tools multiple times
+
+**Example Queries:**
+```python
+# Query 1: Math calculation
+"What is 1234 multiplied by 5678?"
+
+# Query 2: Web search + reasoning  
+"What is the temperature in Tokyo? List it and then triple it"
+```
+
+**Why LangGraph?**
+- More control over agent flow
+- Can create complex multi-agent systems
+- Better for tasks requiring multiple steps
+- Similar to how ChatGPT/Claude work internally
+
+---
+
+### 8. Knowledge Base RAG (In-Memory)
+
+Simple RAG example using in-memory knowledge base (no database setup needed).
+
+```bash
+uv run python main_8chromadb_rag.py
+```
+
+**Features:**
+- 📚 Stores course information (Flutter, Kotlin, LangChain, AI/ML)
+- 🔍 Agent searches knowledge base before answering
+- 👥 Includes metadata (student counts, topics)
+- 💡 Perfect for learning RAG concepts
+
+**Example Queries:**
+```python
+# Query 1
+"Tell me about Flutter and how many students are enrolled?"
+
+# Query 2  
+"What courses are available about mobile development and AI?"
+```
+
+---
+
+### 9. Real ChromaDB Vector Database ⭐ (NEW!)
+
+Production-ready RAG with persistent vector database using ChromaDB.
+
+```bash
+uv run python main_9real_chromadb.py
+```
+
+**Features:**
+- 💾 **Persistent Storage**: Data saved to disk (`./chroma_db/`)
+- 🔢 **Vector Embeddings**: Uses Ollama to generate 4096-dimensional vectors
+- 🎯 **Semantic Search**: Finds similar content, not just keyword matching
+- ⚡ **Fast**: HNSW algorithm for O(log n) similarity search
+- 🗄️ **SQLite Backend**: Metadata stored in SQLite, vectors in binary files
+
+**What Gets Created:**
+```
+chroma_db/
+├── chroma.sqlite3          # Metadata (258 KB)
+└── [UUID]/
+    └── data_level0.bin     # Vector embeddings (1.6 MB)
+```
+
+**How It Works:**
+1. First run: Creates ChromaDB, generates embeddings (takes ~30 seconds)
+2. Later runs: Loads from disk instantly
+3. Agent searches by semantic similarity
+4. Returns relevant documents with metadata
+
+**Example Output:**
+```
+🔧 Creating new ChromaDB...
+⏳ Generating embeddings with Ollama...
+✅ ChromaDB created at: /path/to/chroma_db
+📊 Stored 5 documents with vector embeddings
+
+Query: Tell me about mobile app development frameworks
+
+🔍 Searching ChromaDB for: 'mobile app development frameworks'
+✅ Found: Flutter, Kotlin, LangChain courses
+```
+
+**Why Use ChromaDB?**
+- ✅ Store your company's knowledge
+- ✅ Semantic search (understands meaning, not just keywords)
+- ✅ Scales to millions of documents
+- ✅ Perfect for chatbots, documentation search, Q&A systems
+
+See `chromadb_structure.md` for detailed architecture explanation.
+
+---
+
 ## 🔑 API Keys
 
 ### Get Tavily API Key
@@ -198,6 +320,93 @@ uv run python main_6job_search_example.py
    ```
 
 **Note:** You can use Ollama (free, local) instead of OpenAI for most examples.
+
+---
+
+## 📊 Quick Comparison
+
+| Feature | LangChain (main_1-6) | LangGraph (main_7) | RAG (main_8-9) |
+|---------|---------------------|-------------------|----------------|
+| **Purpose** | Single-pass tasks | Multi-step reasoning | Knowledge retrieval |
+| **Tool Calls** | One-shot | Multiple, iterative | Search database |
+| **State** | Stateless | Stateful graph | Persistent data |
+| **Use Case** | Simple queries | Complex workflows | Company knowledge |
+| **Example** | "What's 2+2?" | "Search, then calculate" | "Find in our docs" |
+
+### When to Use What?
+
+- **LangChain (main_1-6)**: Quick tasks, single tool calls, real-time data
+- **LangGraph (main_7)**: Multi-step reasoning, agent workflows, complex decisions
+- **RAG (main_8-9)**: Company knowledge, documentation, FAQs, domain-specific info
+
+---
+
+## 🧠 Learning Path
+
+**Beginner:**
+1. `main_1` → Learn basic LangChain
+2. `main_2` → Try local Ollama
+3. `main_3` → Understand tool calling
+
+**Intermediate:**
+4. `main_5` → Real-time search with Tavily
+5. `main_7` → Multi-step agents with LangGraph
+6. `main_8` → Understand RAG concepts
+
+**Advanced:**
+7. `main_9` → Production RAG with ChromaDB
+8. Read `chromadb_structure.md` → Deep dive into vector databases
+
+---
+
+## 🛠️ Troubleshooting
+
+### Ollama Connection Error
+```
+httpcore.ConnectError: [Errno 61] Connection refused
+```
+**Solution:** Start Ollama first
+```bash
+ollama serve
+```
+
+### Tavily API Error
+```
+ValueError: TAVILY_API_KEY not found
+```
+**Solution:** Add key to `.env` file
+```env
+TAVILY_API_KEY=tvly-dev-your-key-here
+```
+
+### ChromaDB Not Found
+```
+ModuleNotFoundError: No module named 'chromadb'
+```
+**Solution:** Reinstall dependencies
+```bash
+uv sync
+```
+
+---
+
+## 📚 Additional Resources
+
+- **LangChain Docs**: https://python.langchain.com/
+- **LangGraph Docs**: https://langchain-ai.github.io/langgraph/
+- **ChromaDB Docs**: https://docs.trychroma.com/
+- **Ollama Models**: https://ollama.ai/library
+- **Tavily Search**: https://tavily.com/
+
+---
+
+## 🤝 Contributing
+
+Feel free to add more examples or improve existing ones!
+
+## 📝 License
+
+MIT
 
 ---
 
