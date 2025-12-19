@@ -62,9 +62,8 @@ LangChainProject/
 ├── main_7langgraph_react_agent.py      # LangGraph ReAct agent (NEW! ⭐)
 ├── main_8chromadb_rag.py               # Knowledge base RAG (in-memory)
 ├── main_9real_chromadb.py              # Real ChromaDB vector database (NEW! ⭐)
+├── main_10_mongo_vector_search.py      # MongoDB Atlas Vector Search (NEW! ⭐)
 ├── flow_7.png                          # LangGraph visualization
-├── chromadb_structure.md               # ChromaDB architecture explanation
-├── main_8_explanation.md               # RAG explanation
 ├── .env                                # Environment variables (create this)
 ├── pyproject.toml                      # Project dependencies
 ├── chroma_db/                          # ChromaDB storage (created on first run)
@@ -297,6 +296,84 @@ See `chromadb_structure.md` for detailed architecture explanation.
 
 ---
 
+### 10. MongoDB Atlas Vector Search ⭐ (NEW!)
+
+Cloud-based vector search using MongoDB Atlas with LangChain integration.
+
+```bash
+uv run python main_10_mongo_vector_search.py
+```
+
+**Features:**
+- ☁️ **Cloud Database**: MongoDB Atlas (no local setup needed)
+- 🔢 **Vector Embeddings**: Uses Ollama `nomic-embed-text` model
+- 🌐 **Atlas Vector Search**: Native MongoDB vector search capabilities
+- 🔄 **Fallback Search**: Manual cosine similarity if Atlas search index not configured
+- 📊 **Metadata Support**: Stores and queries course info, topics, student counts
+
+**Prerequisites:**
+1. MongoDB Atlas account (free tier available)
+2. Connection string with password in `.env`:
+   ```env
+   MONGODB_URI=mongodb+srv://user:password@cluster0.mongodb.net/...
+   MONGO_DB_NAME=rab_test
+   MONGO_COLLECTION=rab_test
+   ```
+
+**What Gets Created:**
+```
+MongoDB Atlas:
+└── rab_test (database)
+    └── rab_test (collection)
+        ├── Document 1 (page_content, embedding, course, topic, students)
+        ├── Document 2 (...)
+        └── Document 3 (...)
+```
+
+**How It Works:**
+1. Connects to MongoDB Atlas cloud database
+2. Generates embeddings using Ollama locally
+3. Stores documents with vector embeddings in MongoDB
+4. Performs semantic similarity search
+5. Returns relevant documents with scores
+
+**Example Output:**
+```
+📌 Query: Tell me about mobile app development frameworks
+
+   Result 1 (similarity: 0.8120):
+   Course: Flutter
+   Topic: Mobile Development
+   Students: 150
+   Content: Flutter is a cross-platform mobile development framework...
+
+   Result 2 (similarity: 0.7243):
+   Course: Kotlin
+   Topic: Android Development
+   Students: 120
+   Content: Kotlin is a modern programming language...
+```
+
+**ChromaDB vs MongoDB Atlas:**
+
+| Feature | ChromaDB (main_9) | MongoDB Atlas (main_10) |
+|---------|------------------|------------------------|
+| **Storage** | Local files | Cloud database |
+| **Setup** | Zero config | Requires MongoDB account |
+| **Scalability** | Limited to disk | Unlimited cloud storage |
+| **Multi-user** | Single machine | Multiple users/apps |
+| **Cost** | Free | Free tier available |
+| **Best For** | Development, prototypes | Production, team collaboration |
+
+**When to Use MongoDB Atlas:**
+- ✅ Production applications
+- ✅ Team collaboration (shared database)
+- ✅ Already using MongoDB for other data
+- ✅ Need backup/replication
+- ✅ Want managed infrastructure
+
+---
+
 ## 🔑 API Keys
 
 ### Get Tavily API Key
@@ -325,19 +402,21 @@ See `chromadb_structure.md` for detailed architecture explanation.
 
 ## 📊 Quick Comparison
 
-| Feature | LangChain (main_1-6) | LangGraph (main_7) | RAG (main_8-9) |
-|---------|---------------------|-------------------|----------------|
-| **Purpose** | Single-pass tasks | Multi-step reasoning | Knowledge retrieval |
-| **Tool Calls** | One-shot | Multiple, iterative | Search database |
-| **State** | Stateless | Stateful graph | Persistent data |
-| **Use Case** | Simple queries | Complex workflows | Company knowledge |
-| **Example** | "What's 2+2?" | "Search, then calculate" | "Find in our docs" |
+| Feature | LangChain (main_1-6) | LangGraph (main_7) | RAG (main_8-9) | MongoDB Atlas (main_10) |
+|---------|---------------------|-------------------|----------------|------------------------|
+| **Purpose** | Single-pass tasks | Multi-step reasoning | Knowledge retrieval | Cloud vector search |
+| **Tool Calls** | One-shot | Multiple, iterative | Search database | Search cloud DB |
+| **State** | Stateless | Stateful graph | Persistent data | Cloud persistent |
+| **Storage** | N/A | N/A | Local files | MongoDB Atlas |
+| **Use Case** | Simple queries | Complex workflows | Company knowledge | Production RAG |
+| **Example** | "What's 2+2?" | "Search, then calculate" | "Find in our docs" | "Team knowledge base" |
 
 ### When to Use What?
 
 - **LangChain (main_1-6)**: Quick tasks, single tool calls, real-time data
 - **LangGraph (main_7)**: Multi-step reasoning, agent workflows, complex decisions
-- **RAG (main_8-9)**: Company knowledge, documentation, FAQs, domain-specific info
+- **RAG ChromaDB (main_8-9)**: Local development, prototypes, single-user apps
+- **RAG MongoDB (main_10)**: Production apps, team collaboration, cloud deployment
 
 ---
 
@@ -354,8 +433,8 @@ See `chromadb_structure.md` for detailed architecture explanation.
 6. `main_8` → Understand RAG concepts
 
 **Advanced:**
-7. `main_9` → Production RAG with ChromaDB
-8. Read `chromadb_structure.md` → Deep dive into vector databases
+7. `main_9` → Production RAG with ChromaDB (local)
+8. `main_10` → Cloud RAG with MongoDB Atlas (production)
 
 ---
 
@@ -388,6 +467,17 @@ ModuleNotFoundError: No module named 'chromadb'
 uv sync
 ```
 
+### MongoDB Connection Error
+```
+❌ Error: MONGODB_URI not properly set in .env file
+```
+**Solution:** Add your MongoDB Atlas connection string to `.env` with actual password
+```env
+MONGODB_URI=mongodb+srv://username:YOUR_PASSWORD@cluster0.mongodb.net/...
+MONGO_DB_NAME=rab_test
+MONGO_COLLECTION=rab_test
+```
+
 ---
 
 ## 📚 Additional Resources
@@ -395,6 +485,8 @@ uv sync
 - **LangChain Docs**: https://python.langchain.com/
 - **LangGraph Docs**: https://langchain-ai.github.io/langgraph/
 - **ChromaDB Docs**: https://docs.trychroma.com/
+- **MongoDB Atlas**: https://www.mongodb.com/atlas
+- **LangChain-MongoDB**: https://github.com/langchain-ai/langchain-mongodb
 - **Ollama Models**: https://ollama.ai/library
 - **Tavily Search**: https://tavily.com/
 
@@ -546,5 +638,5 @@ MIT License
 
 **Happy Coding! 🚀**
 
-*Last updated: December 7, 2025*
+*Last updated: December 19, 2025*
 
