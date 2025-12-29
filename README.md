@@ -10,6 +10,8 @@ A comprehensive collection of LangChain and LangGraph examples demonstrating AI 
 - **Structured Responses** with Pydantic models
 - **LangGraph ReAct Agents** with multi-step reasoning
 - **RAG with Vector Databases** using ChromaDB
+- **MongoDB Atlas Vector Search** for cloud-based RAG
+- **Short-Term Memory** with conversation chains
 - **Job Search Agent** example
 
 ## 📋 Prerequisites
@@ -63,6 +65,7 @@ LangChainProject/
 ├── main_8chromadb_rag.py               # Knowledge base RAG (in-memory)
 ├── main_9real_chromadb.py              # Real ChromaDB vector database (NEW! ⭐)
 ├── main_10_mongo_vector_search.py      # MongoDB Atlas Vector Search (NEW! ⭐)
+├── main_11_memory_example.py           # Short-term memory example (NEW! ⭐)
 ├── flow_7.png                          # LangGraph visualization
 ├── .env                                # Environment variables (create this)
 ├── pyproject.toml                      # Project dependencies
@@ -374,6 +377,48 @@ MongoDB Atlas:
 
 ---
 
+### 11. Short-Term Memory Example ⭐ (NEW!)
+
+Interactive conversation with memory using `ConversationBufferWindowMemory`.
+
+```bash
+uv run python main_11_memory_example.py
+```
+
+**Features:**
+- Interactive Chat: Type messages and get AI responses
+- Short-Term Memory: Remembers last K interactions (configurable)
+- Automatic Updates: Memory updates with each conversation turn
+
+**How It Works:**
+1. Uses `ConversationBufferWindowMemory` to store recent messages
+2. `ConversationChain` automatically manages memory context
+3. Each response considers previous conversation history
+4. Memory window prevents unlimited growth (keeps only recent interactions)
+
+**Example Interaction:**
+```
+You: Hi, my name is John
+AI: Hello John! Nice to meet you.
+
+You: What's my name?
+AI: Your name is John.
+```
+
+**Memory Types in LangChain:**
+- `ConversationBufferMemory`: Unlimited memory (grows forever)
+- `ConversationBufferWindowMemory`: Limited to last K interactions ⭐
+- `ConversationSummaryMemory`: Summarizes old messages to save space
+- `ConversationTokenBufferMemory`: Limited by token count
+
+**Why Short-Term Memory?**
+- Prevents memory from growing too large
+- Focuses on recent context
+- Better for long conversations
+- Configurable window size
+
+---
+
 ## 🔑 API Keys
 
 ### Get Tavily API Key
@@ -402,14 +447,14 @@ MongoDB Atlas:
 
 ## 📊 Quick Comparison
 
-| Feature | LangChain (main_1-6) | LangGraph (main_7) | RAG (main_8-9) | MongoDB Atlas (main_10) |
-|---------|---------------------|-------------------|----------------|------------------------|
-| **Purpose** | Single-pass tasks | Multi-step reasoning | Knowledge retrieval | Cloud vector search |
-| **Tool Calls** | One-shot | Multiple, iterative | Search database | Search cloud DB |
-| **State** | Stateless | Stateful graph | Persistent data | Cloud persistent |
-| **Storage** | N/A | N/A | Local files | MongoDB Atlas |
-| **Use Case** | Simple queries | Complex workflows | Company knowledge | Production RAG |
-| **Example** | "What's 2+2?" | "Search, then calculate" | "Find in our docs" | "Team knowledge base" |
+| Feature | LangChain (main_1-6) | LangGraph (main_7) | RAG (main_8-9) | MongoDB Atlas (main_10) | Memory (main_11) |
+|---------|---------------------|-------------------|----------------|------------------------|------------------|
+| **Purpose** | Single-pass tasks | Multi-step reasoning | Knowledge retrieval | Cloud vector search | Conversation context |
+| **Tool Calls** | One-shot | Multiple, iterative | Search database | Search cloud DB | N/A |
+| **State** | Stateless | Stateful graph | Persistent data | Cloud persistent | Conversation history |
+| **Storage** | N/A | N/A | Local files | MongoDB Atlas | In-memory buffer |
+| **Use Case** | Simple queries | Complex workflows | Company knowledge | Production RAG | Chatbots, assistants |
+| **Example** | "What's 2+2?" | "Search, then calculate" | "Find in our docs" | "Team knowledge base" | "Remember my name" |
 
 ### When to Use What?
 
@@ -417,6 +462,7 @@ MongoDB Atlas:
 - **LangGraph (main_7)**: Multi-step reasoning, agent workflows, complex decisions
 - **RAG ChromaDB (main_8-9)**: Local development, prototypes, single-user apps
 - **RAG MongoDB (main_10)**: Production apps, team collaboration, cloud deployment
+- **Memory (main_11)**: Interactive applications, chatbots, virtual assistants
 
 ---
 
@@ -435,6 +481,7 @@ MongoDB Atlas:
 **Advanced:**
 7. `main_9` → Production RAG with ChromaDB (local)
 8. `main_10` → Cloud RAG with MongoDB Atlas (production)
+9. `main_11` → Interactive applications with memory
 
 ---
 
@@ -638,5 +685,4 @@ MIT License
 
 **Happy Coding! 🚀**
 
-*Last updated: December 19, 2025*
-
+*Last updated: December 29, 2025*
