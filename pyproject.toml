@@ -8,6 +8,7 @@ dependencies = [
     "black>=25.11.0",
     "isort>=6.1.0",
     "langchain>=0.3.27",
+    "langchain-chroma>=0.2.6",
     "langchain-community>=0.3.31",
     "langchain-mongodb>=0.7.2",
     "langchain-ollama>=0.3.10",

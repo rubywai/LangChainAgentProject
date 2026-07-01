@@ -1,10 +1,9 @@
-import os
 from typing import Literal
-from dotenv import load_dotenv
 from pathlib import Path
 
-env_path = Path(__file__).parent / '.env'
-load_dotenv(dotenv_path=env_path)
+from security_utils import load_project_env, require_env
+
+env_path = load_project_env(__file__)
 
 from langchain_core.messages import HumanMessage
 from langchain_core.tools import tool
@@ -34,8 +33,7 @@ def calculator(operation: str, x: float, y: float) -> str:
 
 
 def validate_env() -> None:
-    if not os.getenv("TAVILY_API_KEY"):
-        raise EnvironmentError("TAVILY_API_KEY not found in .env file")
+    require_env("TAVILY_API_KEY", env_path, "TAVILY_API_KEY=tvly-dev-your-key-here")
 
 
 def run_agent_reasoning(state: MessagesState) -> MessagesState:
@@ -105,4 +103,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

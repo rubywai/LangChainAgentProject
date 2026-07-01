@@ -1,4 +1,3 @@
-from dotenv import load_dotenv
 from pathlib import Path
 import os
 from pymongo import MongoClient
@@ -6,10 +5,11 @@ from langchain_mongodb import MongoDBAtlasVectorSearch
 from langchain_ollama import OllamaEmbeddings
 from langchain_core.documents import Document
 
-load_dotenv(dotenv_path=Path(__file__).parent / '.env')
+from security_utils import load_project_env, require_env, sanitize_error_message
 
-# Configuration from environment - you provided these values
-MONGODB_URI = os.environ.get('MONGODB_URI', 'mongodb+srv://cheatouser:<db_password>@cluster0.wmueyun.mongodb.net/?appName=Cluster0')
+ENV_PATH = load_project_env(__file__)
+
+MONGODB_URI = os.environ.get('MONGODB_URI')
 DB_NAME = os.environ.get('MONGO_DB_NAME', 'rab_test')
 COLLECTION_NAME = os.environ.get('MONGO_COLLECTION', 'rab_test')
 INDEX_NAME = os.environ.get('MONGO_INDEX_NAME', 'vector_index')
@@ -60,11 +60,14 @@ def main():
     print("🚀 MongoDB Atlas Vector Search with LangChain")
     print("=" * 60)
 
-    # Validate environment
-    if not MONGODB_URI or '<db_password>' in MONGODB_URI:
-        print("❌ Error: MONGODB_URI not properly set in .env file")
-        print("   Please set MONGODB_URI with your actual MongoDB password")
-        print("   Example: MONGODB_URI=mongodb+srv://user:password@cluster0...")
+    try:
+        mongodb_uri = require_env(
+            "MONGODB_URI",
+            ENV_PATH,
+            "MONGODB_URI=mongodb+srv://username:password@cluster0.mongodb.net/...",
+        )
+    except EnvironmentError as exc:
+        print(f"❌ {exc}")
         return
 
     # Initialize
@@ -73,7 +76,7 @@ def main():
     print(f"   Collection: {COLLECTION_NAME}")
     print(f"   Index: {INDEX_NAME}")
 
-    client = MongoClient(MONGODB_URI)
+    client = MongoClient(mongodb_uri, serverSelectionTimeoutMS=5000)
     embeddings = OllamaEmbeddings(model=EMBED_MODEL)
 
     # Get vector store
@@ -97,10 +100,8 @@ def main():
             print(f"📄 Sample document fields: {list(sample.keys())}")
 
     except Exception as e:
-        print(f"⚠️  Error adding documents: {e}")
+        print(f"⚠️  Error adding documents: {sanitize_error_message(e)}")
         print("   (Documents might already exist, continuing...)")
-        import traceback
-        traceback.print_exc()
 
     # Example queries
     queries = [
@@ -131,7 +132,7 @@ def main():
                         print(f"   Content: {doc.page_content[:150]}...")
                     continue
             except Exception as atlas_error:
-                print(f"   ⚠️  Atlas Vector Search not available: {str(atlas_error)[:100]}")
+                print(f"   ⚠️  Atlas Vector Search not available: {sanitize_error_message(atlas_error)[:100]}")
                 print(f"   🔄 Falling back to manual similarity search...")
 
             # Manual fallback: compute similarities locally
@@ -177,9 +178,7 @@ def main():
                 print(f"   Content: {content[:150]}...")
 
         except Exception as e:
-            print(f"   ❌ Search error: {e}")
-            import traceback
-            traceback.print_exc()
+            print(f"   ❌ Search error: {sanitize_error_message(e)}")
 
     print("\n" + "=" * 60)
     print("✅ Demo completed!")

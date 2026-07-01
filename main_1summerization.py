@@ -1,11 +1,13 @@
-from dotenv import load_dotenv
 from langchain.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 
-load_dotenv()
+from security_utils import load_project_env, require_env, sanitize_error_message
+
+ENV_PATH = load_project_env(__file__)
 
 
 def main():
+    require_env("OPENAI_API_KEY", ENV_PATH, "OPENAI_API_KEY=sk-proj-your-key-here")
     information = """
     Ruby Learner in Myanmar offers online tech training, primarily focusing on Flutter and Kotlin for app development, with video lessons available on YouTube, teaching local learners how to build mobile apps in Burmese. 
 Key Offerings & Platform:
@@ -37,7 +39,7 @@ Language: Lessons are in Burmese, making tech education accessible in Myanmar.
         print(result.content)
     except Exception as e:
         # Print a helpful error message but keep the script from crashing silently
-        print("Failed to run LLM chain:", str(e))
+        print("Failed to run LLM chain:", sanitize_error_message(e))
 
 
 if __name__ == "__main__":

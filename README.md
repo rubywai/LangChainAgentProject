@@ -38,7 +38,13 @@ uv sync
 
 3. **Set up environment variables**
 
-Create a `.env` file in the project root:
+Copy `.env.example` to `.env` and fill in only the values you actually use:
+
+```bash
+cp .env.example .env
+```
+
+Then edit `.env`:
 ```env
 OPENAI_API_KEY=sk-proj-your-key-here
 TAVILY_API_KEY=tvly-dev-your-key-here

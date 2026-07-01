@@ -2,13 +2,11 @@ from langchain.tools import tool
 from langchain_core.messages import HumanMessage, ToolMessage
 from langchain_ollama import ChatOllama
 from langchain_community.tools.tavily_search import TavilySearchResults
-from dotenv import load_dotenv
-import os
 from pathlib import Path
 
-# Load .env file
-env_path = Path(__file__).parent / '.env'
-load_dotenv(dotenv_path=env_path)
+from security_utils import load_project_env, require_env, sanitize_error_message
+
+env_path = load_project_env(__file__)
 
 
 @tool
@@ -26,15 +24,11 @@ def get_course_info(course_name: str) -> str:
 
 
 def main():
-    # Check for Tavily API key
-    tavily_api_key = os.getenv("TAVILY_API_KEY")
-    if not tavily_api_key:
-        raise ValueError(
-            f"TAVILY_API_KEY not found in environment variables.\n"
-            f"Checked .env file at: {env_path}\n"
-            f"Please ensure the file exists and contains:\n"
-            f"TAVILY_API_KEY=your-actual-key-here"
-        )
+    tavily_api_key = require_env(
+        "TAVILY_API_KEY",
+        env_path,
+        "TAVILY_API_KEY=tvly-dev-your-key-here",
+    )
 
     # Initialize local Ollama model
     llm = ChatOllama(temperature=0, model="llama3.1:8b")
@@ -65,7 +59,11 @@ def main():
         print(f"{'='*80}\n")
 
         # First call - LLM decides which tool to use
-        result = llm_with_tools.invoke([HumanMessage(content=query)])
+        try:
+            result = llm_with_tools.invoke([HumanMessage(content=query)])
+        except Exception as exc:
+            print(f"❌ LLM/tool planning error: {sanitize_error_message(exc)}")
+            continue
 
         # Handle tool calls
         if hasattr(result, 'tool_calls') and result.tool_calls:
@@ -82,7 +80,10 @@ def main():
                 if tool_name == 'get_course_info':
                     tool_result = get_course_info.invoke(tool_args)
                 elif tool_name == 'tavily_search_results_json':
-                    tool_result = tavily_search.invoke(tool_args)
+                    try:
+                        tool_result = tavily_search.invoke(tool_args)
+                    except Exception as exc:
+                        tool_result = f"Search tool failed: {sanitize_error_message(exc)}"
                 else:
                     tool_result = f"Unknown tool: {tool_name}"
 
@@ -111,4 +112,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

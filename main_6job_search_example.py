@@ -4,12 +4,9 @@ This searches for job postings and returns structured data with sources.
 """
 from typing import List
 from pydantic import BaseModel, Field
-from dotenv import load_dotenv
-from pathlib import Path
+from security_utils import load_project_env, require_env, sanitize_error_message
 
-# Load .env file
-env_path = Path(__file__).parent / '.env'
-load_dotenv(dotenv_path=env_path)
+env_path = load_project_env(__file__)
 
 from langchain_core.messages import HumanMessage, ToolMessage
 from langchain_ollama import ChatOllama
@@ -32,6 +29,7 @@ class AgentResponse(BaseModel):
 def main():
     print("🚀 Hello from langchain-course!\n")
     print("Initializing Ollama (local) and Tavily search agent...\n")
+    require_env("TAVILY_API_KEY", env_path, "TAVILY_API_KEY=tvly-dev-your-key-here")
 
     # Initialize local Ollama model (instead of OpenAI gpt-5)
     llm = ChatOllama(temperature=0, model="llama3.1:8b")
@@ -101,7 +99,11 @@ Respond with structured JSON containing "answer" and "sources" fields.
 """))
 
     # Get structured response
-    structured_response = structured_llm.invoke(final_messages)
+    try:
+        structured_response = structured_llm.invoke(final_messages)
+    except Exception as exc:
+        print(f"❌ Error generating structured response: {sanitize_error_message(exc)}")
+        return
 
     print("="*80)
     print("\n📊 RESULT:\n")
@@ -122,4 +124,3 @@ Respond with structured JSON containing "answer" and "sources" fields.
 
 if __name__ == "__main__":
     main()
-

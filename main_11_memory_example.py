@@ -1,12 +1,13 @@
 import os
 from pathlib import Path
 
-from dotenv import load_dotenv
 from langchain.chains import ConversationChain
 from langchain.memory import ConversationBufferWindowMemory
 from langchain_ollama import ChatOllama
 
-load_dotenv(dotenv_path=Path(__file__).parent / '.env')
+from security_utils import load_project_env, sanitize_error_message
+
+load_project_env(__file__)
 
 # Configuration
 OLLAMA_MODEL = os.environ.get('OLLAMA_MODEL', 'llama3.1:8b')
@@ -51,7 +52,7 @@ def main():
             response = conversation.run(input=user_input)
             print(f"AI: {response}")
         except Exception as e:
-            print(f"Error: {e}")
+            print(f"Error: {sanitize_error_message(e)}")
 
         print("-" * 60)
 
